@@ -1,4 +1,16 @@
 from app.services.user_service import UserService
-from fastapi import Annotation
+from app.db import engine
+from fastapi import Depends
+from typing import Annotated
+from sqlmodel import Session
 
-userServiceDep = Annotation[UserService, Depends(UserService)]
+userServiceDep = Annotated[UserService, Depends(UserService)]
+
+# Code above omitted 👆
+
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+
+SessionDep = Annotated[Session, Depends(get_session)]
