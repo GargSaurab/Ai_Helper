@@ -1,13 +1,12 @@
-from pydantic import BaseModel
-from app.dependencies import SessionDep
-from app.models.request.user_registeration_request import UserRegistrationRequest
+from app.models.request.user_registration_request import UserRegistrationRequest
+from app.db.repositories.user_repository import UserRepository
 
-class UserService(BaseModel):
+class UserService:
     
-    def __init__(self, db_session : SessionDep ):
-       self.db = db_session
+    def __init__(self, userRepo: UserRepository):
+        self.userRepo = userRepo
        
-    def register(self, user_registeration_request : UserRegistrationRequest):
+    def register(self, user_registeration_request: UserRegistrationRequest):
         pass    
    
         

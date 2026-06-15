@@ -5,7 +5,6 @@ from alembic import context
 from sqlmodel import SQLModel
 
 from app.core.config import settings
-import app.db.schema  # Import models to register them with metadata
 
 config = context.config
 
