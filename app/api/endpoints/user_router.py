@@ -1,11 +1,20 @@
 from fastapi import APIRouter
 from app.models.request.user_registration_request import UserRegistrationRequest
-from app.dependencies.dependencies import userServiceDep
+from app.dependencies.service_dependencies import UserServiceDep
+from app.models.response.base_response import BaseResponse
 
-app = APIRouter(prefix = "/users")
+app = APIRouter(prefix="/users")
 
 @app.post("/register")
-def registerUser(user_registeration_request : UserRegistrationRequest, user_Service : userServiceDep):
-    user_Service.register(user_registeration_request)
+def registerUser(
+    request: UserRegistrationRequest, user_Service: UserServiceDep
+) -> BaseResponse :
+    user = user_Service.register(request)
 
-
+    return BaseResponse(
+        success=True,
+        message="User registered successfully",
+        data=user,
+    )
+        
+        

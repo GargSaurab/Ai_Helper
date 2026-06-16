@@ -6,7 +6,7 @@ from app.db.db_session import SessionDep
 from app.db.repositories.user_repository import UserRepository
 
 
-def get_user_repo(db: SessionDep) -> UserRepository: # type: ignore
+def get_user_repo(db: SessionDep) -> UserRepository:  # type: ignore
     return UserRepository(db)
 
 

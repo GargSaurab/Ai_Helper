@@ -9,8 +9,10 @@ engine = create_engine(
     echo=True,  # False in production
 )
 
-def get_session()-> Session:
+
+def get_session() -> Session:
     with Session(engine) as session:
         yield session
-        
+
+
 SessionDep = Annotated[Session, Depends(get_session)]

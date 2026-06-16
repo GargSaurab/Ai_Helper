@@ -8,4 +8,8 @@ class UserRegistrationRequest(BaseModel):
 
     password: str = Field(min_length=8, max_length=128)
 
-    phone_number: str = Field(min_length=10, max_length=10)
+    phone_number: str | None = Field(
+        default=None,
+        min_length=10,
+        max_length=10,
+    )
