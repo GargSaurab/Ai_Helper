@@ -18,7 +18,7 @@ class UserRepository:
         statement = select(User).where(User.phone_number == phone_number)
 
         return self.db.exec(statement).first()
-    
+
     def save(self, user: User) -> User:
         try:
             self.db.add(user)
