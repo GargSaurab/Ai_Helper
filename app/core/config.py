@@ -3,6 +3,8 @@ from urllib.parse import quote_plus
 from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+import logging
+
 
 class Settings(BaseSettings):
     DB_HOST: str
@@ -10,6 +12,12 @@ class Settings(BaseSettings):
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: str
+
+    LOGGER_LEVEL: str = logging.INFO
+
+    APP_NAME: str = "Coding Ai Helper"
+    APP_VERSION: str = "0.0.1"
+    ENVIRONMENT: str = "dev"
 
     model_config = SettingsConfigDict(
         env_file=".env",
