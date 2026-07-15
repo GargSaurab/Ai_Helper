@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from sqlalchemy import true
 from app.models.request.user_registration_request import UserRegistrationRequest
 from app.models.request.user_login_request import UserLoginRequest
 from app.dependencies.service_dependencies import UserServiceDep
@@ -21,7 +22,8 @@ def registerUser(
     logger.info("User registeration finished")
 
     return BaseResponse(
-        success=200,
+        success=True,
+        code=200,
         message="User registered successfully",
         data=user,
     )

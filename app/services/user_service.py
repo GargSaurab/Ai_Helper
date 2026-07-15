@@ -1,5 +1,5 @@
-from fastapi import HTTPException, status
-
+from app.core.exception.app_exception import AppException
+from app.core.exception.error_codes import ErrorCodes
 from app.core.logging.logger import get_logger
 from app.core.password_hasher import hash_password, verify_password
 from app.db.repositories.user_repository import UserRepository
@@ -7,6 +7,8 @@ from app.db.schema.user_schema import User
 from app.models.request.user_login_request import UserLoginRequest
 from app.models.request.user_registration_request import UserRegistrationRequest
 from app.models.response.base_response import BaseResponse
+
+from sqlalchemy.exc import SQLAlchemyError
 
 LOG = get_logger(__name__)
 
@@ -23,26 +25,10 @@ class UserService:
         )
 
         if self.user_repo.get_user_by_email(request.email):
-            LOG.warning(
-                "Registration failed. Email already exists: %s",
-                request.email,
-            )
-
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="User with this email already exists",
-            )
+            raise AppException(ErrorCodes.ALREADY_EXISTS, "Email already Exists")
 
         if self.user_repo.get_user_by_phone_number(request.phone_number):
-            LOG.warning(
-                "Registration failed. Phone number already exists: %s",
-                request.phone_number,
-            )
-
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="User with this phone already exists",
-            )
+            raise AppException(ErrorCodes.ALREADY_EXISTS, "Phone Number already Exists")
 
         user = User(
             name=request.username,
@@ -51,18 +37,11 @@ class UserService:
             phone_number=request.phone_number,
         )
 
-        saved_user = self.user_repo.save(user)
+        try:
+            saved_user = self.user_repo.save(user)
 
-        if not saved_user:
-            LOG.error(
-                "Registration failed. Repository returned None for email: %s",
-                request.email,
-            )
-
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="User registration failed. Please try again.",
-            )
+        except SQLAlchemyError as ex:
+            raise AppException(ErrorCodes.USER_REGISTRATION_FAILED) from ex
 
         LOG.info(
             "User registered successfully. User ID: %s",
@@ -85,27 +64,14 @@ class UserService:
 
         user: User | None = self.user_repo.get_user_by_email(request.email)
 
-        if not user:
-            LOG.warning(
-                "Login failed. User not found: %s",
-                request.email,
-            )
+        if user is None:
+            raise AppException(ErrorCodes.NOT_FOUND, "User Not Found")
 
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User with this email does not exist",
-            )
-
-        if not verify_password(request.password, user.password_hash):
-            LOG.warning(
-                "Login failed. Invalid password for user ID: %s",
-                user.id,
-            )
-
-            return BaseResponse(
-                code=401,
-                message="Invalid email or password",
-            )
+        if not verify_password(
+            request.password,
+            user.password_hash,
+        ):
+            raise AppException(ErrorCodes.INVALID_REQUEST, "Invalid Credentials")
 
         LOG.info(
             "User logged in successfully. User ID: %s",
@@ -113,6 +79,7 @@ class UserService:
         )
 
         return BaseResponse(
-            code=200,
+            success=True,
+            code=0,
             message="Login Successful",
         )

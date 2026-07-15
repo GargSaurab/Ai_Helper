@@ -5,6 +5,7 @@ from fastapi import FastAPI
 
 from app.api.api_router import api_router
 from app.core.config import settings
+from app.core.exception.exception_handler import register_exception_handlers
 from app.core.logging.logger import get_logger
 from app.core.logging.logger_config import configure_logging
 
@@ -41,6 +42,8 @@ app.include_router(
     prefix="/api/v1",
 )
 
+register_exception_handlers(app)
+
 
 @app.get("/", tags=["Health"])
 async def health_check():
@@ -49,6 +52,7 @@ async def health_check():
         "application": settings.APP_NAME,
         "version": settings.APP_VERSION,
     }
+
 
 if __name__ == "__main__":
     uvicorn.run(
