@@ -2,6 +2,6 @@ from dataclasses import dataclass
 
 
 @dataclass(frozen=True)
-class ErrorCode:
+class ResponseCode:
     code: int
     message: str

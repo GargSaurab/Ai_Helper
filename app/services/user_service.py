@@ -55,7 +55,7 @@ class UserService:
             "phone_number": saved_user.phone_number,
         }
 
-    def login(self, request: UserLoginRequest) -> BaseResponse:
+    def login(self, request: UserLoginRequest) -> str:
 
         LOG.info(
             "Login requested for email: %s",
@@ -78,8 +78,4 @@ class UserService:
             user.id,
         )
 
-        return BaseResponse(
-            success=True,
-            code=0,
-            message="Login Successful",
-        )
+        return "Login Successful"

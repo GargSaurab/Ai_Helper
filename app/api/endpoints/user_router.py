@@ -1,37 +1,62 @@
 from fastapi import APIRouter
-from sqlalchemy import true
-from app.models.request.user_registration_request import UserRegistrationRequest
-from app.models.request.user_login_request import UserLoginRequest
-from app.dependencies.service_dependencies import UserServiceDep
-from app.models.response.base_response import BaseResponse
+
 from app.core.logging.logger import get_logger
+from app.dependencies.service_dependencies import UserServiceDep
+from app.models.request.user_login_request import UserLoginRequest
+from app.models.request.user_registration_request import UserRegistrationRequest
+from app.models.response.base_response import BaseResponse
+from app.core.response.response_codes import SUCCESS
 
-app = APIRouter(prefix="/users")
+router = APIRouter(prefix="/users", tags=["Users"])
 
-logger = get_logger(__name__)
+LOG = get_logger(__name__)
 
-
-@app.post("/register")
-def registerUser(
-    request: UserRegistrationRequest, user_Service: UserServiceDep
+@router.post("/register", response_model=BaseResponse)
+def register_user(
+    request: UserRegistrationRequest,
+    user_service: UserServiceDep,
 ) -> BaseResponse:
-    logger.info("User registeration started")
 
-    user = user_Service.register(request)
+    LOG.info(
+        "User registration started for email: %s",
+        request.email,
+    )
 
-    logger.info("User registeration finished")
+    user = user_service.register(request)
+
+    LOG.info(
+        "User registration completed for email: %s",
+        request.email,
+    )
 
     return BaseResponse(
-        success=True,
-        code=200,
+        code=SUCCESS.code,
         message="User registered successfully",
         data=user,
     )
 
 
-@app.post("/login")
-def login(request: UserLoginRequest, user_Service: UserServiceDep):
-    logger.info("User login started")
-    response: BaseResponse = user_Service.login(request)
-    logger.info("User login finished")
-    return response
+@router.post("/login", response_model=BaseResponse)
+def login(
+    request: UserLoginRequest,
+    user_service: UserServiceDep,
+) -> BaseResponse:
+
+    LOG.info(
+        "User login started for email: %s",
+        request.email,
+    )
+
+    response: str = user_service.login(request)
+
+    LOG.info(
+        "User login completed for email: %s",
+        request.email,
+    )
+
+    return BaseResponse(
+        code=SUCCESS.code,
+        message="Login successful",
+        data=response,
+    )
+    

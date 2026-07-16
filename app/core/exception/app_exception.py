@@ -1,8 +1,8 @@
-from app.core.exception.error_code import ErrorCode
+from app.core.response.response_code import ResponseCode
 
 
 class AppException(Exception):
-    def __init__(self, error: ErrorCode, message: str | None = None):
+    def __init__(self, error: ResponseCode, message: str | None = None):
         self.error = error
         self.message = message or error.message
 

@@ -1,23 +1,23 @@
-from app.core.exception.error_code import ErrorCode
+from app.core.response.response_code import ResponseCode
 
 
 class ErrorCodes:
-    SUCCESS = ErrorCode(0, "Success")
+    SUCCESS = ResponseCode(0, "Success")
 
-    NOT_FOUND = ErrorCode(1000, "Resource not found")
+    NOT_FOUND = ResponseCode(1000, "Resource not found")
 
-    ALREADY_EXISTS = ErrorCode(1001, "Resource already exists")
+    ALREADY_EXISTS = ResponseCode(1001, "Resource already exists")
 
-    INVALID_REQUEST = ErrorCode(1002, "Invalid request")
+    INVALID_REQUEST = ResponseCode(1002, "Invalid request")
 
-    UNAUTHORIZED = ErrorCode(1003, "Unauthorized")
+    UNAUTHORIZED = ResponseCode(1003, "Unauthorized")
 
-    FORBIDDEN = ErrorCode(1004, "Access denied")
+    FORBIDDEN = ResponseCode(1004, "Access denied")
 
-    VALIDATION_FAILED = ErrorCode(1005, "Validation failed")
+    VALIDATION_FAILED = ResponseCode(1005, "Validation failed")
 
-    DATABASE_ERROR = ErrorCode(9001, "Database operation failed")
+    DATABASE_ERROR = ResponseCode(9001, "Database operation failed")
 
-    EXTERNAL_SERVICE_ERROR = ErrorCode(9002, "External service failed")
+    EXTERNAL_SERVICE_ERROR = ResponseCode(9002, "External service failed")
 
-    INTERNAL_SERVER_ERROR = ErrorCode(9999, "Internal server error")
+    INTERNAL_SERVER_ERROR = ResponseCode(9999, "Internal server error")
