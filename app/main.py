@@ -8,12 +8,12 @@ from app.core.config import settings
 from app.core.exception.exception_handler import register_exception_handlers
 from app.core.logging.logger import get_logger
 from app.core.logging.logger_config import configure_logging
+from fastapi.security import OAuth2PasswordBearer
 
 # Configure logging before anything else
 configure_logging(settings.LOGGER_LEVEL)
 
 LOG = get_logger(__name__)
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

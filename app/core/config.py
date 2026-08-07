@@ -24,6 +24,11 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
+    
+    ## JWT Secret Key for signing and verifying JWT tokens
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
+        
 
     @computed_field
     @property

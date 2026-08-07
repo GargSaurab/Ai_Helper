@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.core.logging.logger import get_logger
+from app.core.security.security_dependency import CurrentUser
 from app.dependencies.service_dependencies import UserServiceDep
 from app.models.request.user_login_request import UserLoginRequest
 from app.models.request.user_registration_request import UserRegistrationRequest
@@ -58,5 +59,21 @@ def login(
         code=SUCCESS.code,
         message="Login successful",
         data=response,
+    )
+    
+
+@router.post("/me", response_model=BaseResponse)
+def getUser(
+    current_user: CurrentUser
+) -> BaseResponse:
+
+    LOG.info(
+        "Fetching current user information"
+    )
+
+    return BaseResponse(
+        code=SUCCESS.code,
+        message=SUCCESS.message,
+        data=current_user,
     )
     

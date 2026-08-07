@@ -1,23 +1,24 @@
 from app.core.exception.app_exception import AppException
 from app.core.exception.error_codes import ErrorCodes
 from app.core.logging.logger import get_logger
-from app.core.password_hasher import hash_password, verify_password
+from app.core.security.password_hasher import hash_password, verify_password
+from app.core.security.token_data import TokenData
 from app.db.repositories.user_repository import UserRepository
 from app.db.schema.user_schema import User
 from app.models.request.user_login_request import UserLoginRequest
 from app.models.request.user_registration_request import UserRegistrationRequest
-from app.models.response.base_response import BaseResponse
+from app.core.security.jwt_service import JWTService
 
 from sqlalchemy.exc import SQLAlchemyError
 
 LOG = get_logger(__name__)
 
-
 class UserService:
-    def __init__(self, user_repo: UserRepository):
+    def __init__(self, user_repo: UserRepository, jwt_service: JWTService):
         self.user_repo = user_repo
+        self.jwt_service = jwt_service
 
-    def register(self, request: UserRegistrationRequest):
+    def register(self, request: UserRegistrationRequest) -> str:
 
         LOG.info(
             "Registration requested for email: %s",
@@ -48,18 +49,13 @@ class UserService:
             saved_user.id,
         )
 
-        return {
-            "id": saved_user.id,
-            "name": saved_user.name,
-            "email": saved_user.email,
-            "phone_number": saved_user.phone_number,
-        }
+        return self._generate_access_token(saved_user)
 
     def login(self, request: UserLoginRequest) -> str:
 
         LOG.info(
             "Login requested for email: %s",
-            request.email,
+            request.email
         )
 
         user: User | None = self.user_repo.get_user_by_email(request.email)
@@ -78,4 +74,12 @@ class UserService:
             user.id,
         )
 
-        return "Login Successful"
+        return self._generate_access_token(user)
+    
+    def _generate_access_token(self, user: User) -> str:
+        return self.jwt_service.encode(
+            TokenData(
+                user_id=str(user.id),
+                email=user.email,
+            )
+        )
