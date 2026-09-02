@@ -23,6 +23,7 @@ dependencies = [
     "pyjwt>=2.13.0",
     "pypdf>=6.9.2",
     "python-dotenv>=1.2.2",
+    "redis>=8.1.0",
     "sqlmodel>=0.0.38",
 ]
 [tool.fastapi]

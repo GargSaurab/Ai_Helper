@@ -28,8 +28,22 @@ class Settings(BaseSettings):
     ## JWT Secret Key for signing and verifying JWT tokens
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
-        
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15  # Default expiration time in minutes for access tokens
+    REFRESH_TOKEN_EXPIRE_MINUTES:int = 10080
 
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+    REDIS_DB: int = 0
+    REDIS_PASSWORD: str | None = None
+
+    @property
+    def access_token_expire_seconds(self) -> int:
+        return self.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+
+    @property
+    def refresh_token_expire_seconds(self) -> int:
+        return self.REFRESH_TOKEN_EXPIRE_MINUTES * 60
+     
     @computed_field
     @property
     def DATABASE_URL(self) -> str:
