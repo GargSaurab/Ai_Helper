@@ -12,14 +12,13 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 LOG = get_logger(__name__)
 
-@router.post("/me", response_model=BaseResponse, dependencies=[Depends(authenticate_user)])
-async def get_user(
-    request: Request
-) -> BaseResponse:
 
-    LOG.info(
-        "Fetching current user information"
-    )
+@router.post(
+    "/me", response_model=BaseResponse, dependencies=[Depends(authenticate_user)]
+)
+async def get_user(request: Request) -> BaseResponse:
+
+    LOG.info("Fetching current user information")
 
     return BaseResponse(
         code=SUCCESS.code,

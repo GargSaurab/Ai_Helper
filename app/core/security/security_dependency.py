@@ -13,19 +13,20 @@ from app.models.response.user_response import UserResponse
 def get_jwt_service() -> JWTService:
     return JWTService()
 
+
 JWTServiceDep = Annotated[JWTService, Depends(get_jwt_service)]
 
 
 # 2. Authentication Service Provider
-def get_authentication_service(
-    jwt_service: JWTServiceDep
-) -> AuthenticationService:
+def get_authentication_service(jwt_service: JWTServiceDep) -> AuthenticationService:
     return AuthenticationService(jwt_service)
+
 
 AuthServiceDep = Annotated[AuthenticationService, Depends(get_authentication_service)]
 
 
 TokenDep = Annotated[str, Depends(oauth2_scheme)]
+
 
 def authenticate_user(
     request: Request,
@@ -33,5 +34,6 @@ def authenticate_user(
     auth_service: AuthServiceDep,
 ) -> None:
     auth_service.authenticate_request(request=request, token=token)
+
 
 AuthRequired = Annotated[None, Depends(authenticate_user)]

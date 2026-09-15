@@ -13,6 +13,7 @@ from sqlalchemy.exc import SQLAlchemyError
 
 LOG = get_logger(__name__)
 
+
 class UserService:
     def __init__(self, user_repo: UserRepository, jwt_service: JWTService):
         self.user_repo = user_repo

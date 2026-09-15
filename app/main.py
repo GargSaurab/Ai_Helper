@@ -15,6 +15,7 @@ configure_logging(settings.LOGGER_LEVEL)
 
 LOG = get_logger(__name__)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     LOG.info(

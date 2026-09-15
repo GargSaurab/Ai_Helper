@@ -19,9 +19,9 @@ class JWTService:
         expiry_time: int,
         extra_claims: dict[str, Any] | None = None,
     ) -> str:
-        
+
         payload = token_data.model_dump(exclude_none=True)
-        
+
         if extra_claims:
             for key, value in extra_claims.items():
                 if key not in payload:
@@ -30,10 +30,12 @@ class JWTService:
         now = datetime.now(timezone.utc)
         expire = now + timedelta(minutes=expiry_time)
 
-        payload.update({
-            "iat": int(now.timestamp()),
-            "exp": int(expire.timestamp()),
-        })
+        payload.update(
+            {
+                "iat": int(now.timestamp()),
+                "exp": int(expire.timestamp()),
+            }
+        )
 
         return jwt.encode(
             payload,

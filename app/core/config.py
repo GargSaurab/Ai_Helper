@@ -24,12 +24,14 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore",
     )
-    
+
     ## JWT Secret Key for signing and verifying JWT tokens
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15  # Default expiration time in minutes for access tokens
-    REFRESH_TOKEN_EXPIRE_MINUTES:int = 10080
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = (
+        15  # Default expiration time in minutes for access tokens
+    )
+    REFRESH_TOKEN_EXPIRE_MINUTES: int = 10080
 
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
@@ -43,7 +45,7 @@ class Settings(BaseSettings):
     @property
     def refresh_token_expire_seconds(self) -> int:
         return self.REFRESH_TOKEN_EXPIRE_MINUTES * 60
-     
+
     @computed_field
     @property
     def DATABASE_URL(self) -> str:

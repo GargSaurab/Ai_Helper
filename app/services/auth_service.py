@@ -17,9 +17,14 @@ from sqlalchemy.exc import SQLAlchemyError
 
 LOG = get_logger(__name__)
 
-class AuthService:
 
-    def __init__(self, user_repo: UserRepository, jwt_service: JWTService, redis_service: RedisService):
+class AuthService:
+    def __init__(
+        self,
+        user_repo: UserRepository,
+        jwt_service: JWTService,
+        redis_service: RedisService,
+    ):
         self.user_repo = user_repo
         self.jwt_service = jwt_service
         self.redis_service = redis_service
@@ -62,10 +67,7 @@ class AuthService:
 
     def login(self, request: UserLoginRequest) -> str:
 
-        LOG.info(
-            "Login requested for email: %s",
-            request.email
-        )
+        LOG.info("Login requested for email: %s", request.email)
 
         user: User | None = self.user_repo.get_user_by_email(request.email)
 
@@ -84,17 +86,14 @@ class AuthService:
         )
 
         return self._generate_token_dict(user)
-    
+
     def _generate_token_dict(self, user: User) -> dict[str, str]:
 
         refresh_jti = str(uuid.uuid4())
 
         access_token = self.jwt_service.encode(
-            TokenData(
-                user_id=str(user.id),
-                email=user.email
-            ),
-            expiry_time=self.access_token_expire_minutes
+            TokenData(user_id=str(user.id), email=user.email),
+            expiry_time=self.access_token_expire_minutes,
         )
 
         refresh_token = self.jwt_service.encode(
@@ -103,9 +102,7 @@ class AuthService:
                 email=user.email,
             ),
             expiry_time=self.refresh_token_expire_minutes,
-            extra_claims={
-                            "jti":refresh_jti
-                         }
+            extra_claims={"jti": refresh_jti},
         )
 
         redis_key = f"refresh_token:{user.id}:{refresh_jti}"
@@ -120,7 +117,7 @@ class AuthService:
             "refresh_token": refresh_token,
             "token_type": "bearer",
         }
-    
+
     def rotate_refresh_token(self, refresh_token_str: str) -> dict[str, str]:
         LOG.info("Refresh token rotation requested")
 
@@ -136,16 +133,25 @@ class AuthService:
                 claims.user_id,
                 claims.jti,
             )
-            raise AppException(ErrorCodes.UNAUTHORIZED, "Refresh token expired or revoked")
+            raise AppException(
+                ErrorCodes.UNAUTHORIZED, "Refresh token expired or revoked"
+            )
 
         # 3. Single-Use Rotation: Invalidate previous refresh token
         self.redis_service.delete(redis_key)
-        LOG.info("Previous refresh token revoked for user_id: %s, jti: %s", claims.user_id, claims.jti)
+        LOG.info(
+            "Previous refresh token revoked for user_id: %s, jti: %s",
+            claims.user_id,
+            claims.jti,
+        )
 
         # 4. Fetch user
         user = self.user_repo.get_user_by_email(claims.email)
         if not user:
-            LOG.error("User associated with valid token no longer exists in DB: user_id=%s", claims.user_id)
+            LOG.error(
+                "User associated with valid token no longer exists in DB: user_id=%s",
+                claims.user_id,
+            )
             raise AppException(ErrorCodes.NOT_FOUND, "User not found")
 
         LOG.info("New token pair successfully minted for user_id: %s", user.id)
@@ -171,4 +177,8 @@ class AuthService:
         LOG.info("Global logout requested for all devices: user_id=%s", user_id)
         pattern = f"refresh_token:{user_id}:*"
         deleted_count = self.redis_service.delete_pattern(pattern)
-        LOG.info("All sessions revoked for user_id: %s (total keys cleared: %d)", user_id, deleted_count)
+        LOG.info(
+            "All sessions revoked for user_id: %s (total keys cleared: %d)",
+            user_id,
+            deleted_count,
+        )

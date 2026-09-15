@@ -13,6 +13,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 LOG = get_logger(__name__)
 
+
 @router.post("/register", response_model=BaseResponse)
 def register_user(
     request: UserRegistrationRequest,
@@ -62,18 +63,20 @@ def login(
         data=response,
     )
 
+
 @router.post("/refresh", response_model=BaseResponse)
 def refresh_token(
     request: RefreshTokenRequest,  # 👈 Passed in the JSON request body
     auth_service: AuthServiceDep,
 ) -> BaseResponse:
     new_tokens = auth_service.rotate_refresh_token(request.refresh_token)
-    
+
     return BaseResponse(
         code=SUCCESS.code,
         message="Token refreshed successfully",
         data=new_tokens,
     )
+
 
 @router.post("/logout", response_model=BaseResponse)
 def logout(
@@ -91,4 +94,3 @@ def logout(
         message="Logged out successfully",
         data=None,
     )
-    

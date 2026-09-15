@@ -10,5 +10,6 @@ pool = redis.ConnectionPool(
     decode_responses=True,  # Automatically decodes Redis bytes to strings
 )
 
+
 def get_redis_client() -> redis.Redis:
     return redis.Redis(connection_pool=pool)
