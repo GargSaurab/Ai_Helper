@@ -3,7 +3,6 @@ from urllib.parse import quote_plus
 from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-import logging
 
 
 class Settings(BaseSettings):
@@ -13,7 +12,7 @@ class Settings(BaseSettings):
     DB_USER: str
     DB_PASSWORD: str
 
-    LOGGER_LEVEL: str = logging.INFO
+    LOGGER_LEVEL: str = "INFO"
 
     APP_NAME: str = "Coding Ai Helper"
     APP_VERSION: str = "0.0.1"
@@ -46,7 +45,7 @@ class Settings(BaseSettings):
     def refresh_token_expire_seconds(self) -> int:
         return self.REFRESH_TOKEN_EXPIRE_MINUTES * 60
 
-    @computed_field
+    @computed_field  # type: ignore[prop-decorator]
     @property
     def DATABASE_URL(self) -> str:
         return (
@@ -58,4 +57,4 @@ class Settings(BaseSettings):
         )
 
 
-settings = Settings()
+settings = Settings()  # type: ignore[call-arg]

@@ -1,3 +1,5 @@
+from collections.abc import Generator
+
 from sqlmodel import Session, create_engine
 from fastapi import Depends
 from typing import Annotated
@@ -10,7 +12,7 @@ engine = create_engine(
 )
 
 
-def get_session() -> Session:
+def get_session() -> Generator[Session, None, None]:
     with Session(engine) as session:
         yield session
 

@@ -3,10 +3,7 @@ from fastapi import Depends, Request
 
 from app.core.security.jwt_service import JWTService
 from app.core.security.authentication import AuthenticationService
-from app.db.schema.user_schema import User
-from app.db.repo_dependencies import UserRepositoryDep
 from app.core.security.oauth2 import oauth2_scheme
-from app.models.response.user_response import UserResponse
 
 
 # 1. JWT Service Provider

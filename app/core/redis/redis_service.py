@@ -21,7 +21,8 @@ class RedisService:
 
     def get(self, key: str) -> str | None:
         """Retrieves a string value by key. Returns None if expired or missing."""
-        return self.client.get(key)
+        value = self.client.get(key)
+        return value.decode() if isinstance(value, bytes) else value
 
     def delete(self, *keys: str) -> int:
         """Deletes one or more keys. Returns the number of keys removed."""

@@ -1,7 +1,7 @@
 import uuid
 
 from app.core.exception.app_exception import AppException
-from app.core.exception.error_codes import ErrorCodes
+from app.core.response.response_code import ResponseCode
 from app.core.logging.logger import get_logger
 from app.core.security.password_hasher import hash_password, verify_password
 from app.core.security.token_data import TokenData
@@ -16,6 +16,7 @@ from app.core.config import settings
 from sqlalchemy.exc import SQLAlchemyError
 
 LOG = get_logger(__name__)
+DUMMY_PASSWORD_HASH = hash_password("invalid-user-timing-check")
 
 
 class AuthService:
@@ -40,12 +41,12 @@ class AuthService:
         )
 
         if self.user_repo.get_user_by_email(request.email):
-            raise AppException(ErrorCodes.ALREADY_EXISTS, "Email already Exists")
+            raise AppException(ResponseCode.ALREADY_EXISTS, "Email already exists")
 
         if request.phone_number and self.user_repo.get_user_by_phone_number(
             request.phone_number
         ):
-            raise AppException(ErrorCodes.ALREADY_EXISTS, "Phone Number already Exists")
+            raise AppException(ResponseCode.ALREADY_EXISTS, "Phone number already exists")
 
         user = User(
             name=request.username,
@@ -58,7 +59,7 @@ class AuthService:
             saved_user = self.user_repo.save(user)
 
         except SQLAlchemyError as ex:
-            raise AppException(ErrorCodes.DATABASE_ERROR) from ex
+            raise AppException(ResponseCode.DATABASE_ERROR) from ex
 
         LOG.info(
             "User registered successfully. User ID: %s",
@@ -67,20 +68,16 @@ class AuthService:
 
         return self._generate_token_dict(saved_user)
 
-    def login(self, request: UserLoginRequest) -> str:
+    def login(self, request: UserLoginRequest) -> dict[str, str]:
 
         LOG.info("Login requested for email: %s", request.email)
 
         user: User | None = self.user_repo.get_user_by_email(request.email)
 
-        if user is None:
-            raise AppException(ErrorCodes.NOT_FOUND, "User Not Found")
-
-        if not verify_password(
-            request.password,
-            user.password_hash,
-        ):
-            raise AppException(ErrorCodes.INVALID_REQUEST, "Invalid Credentials")
+        password_hash = user.password_hash if user else DUMMY_PASSWORD_HASH
+        password_valid = verify_password(request.password, password_hash)
+        if user is None or not password_valid:
+            raise AppException(ResponseCode.INVALID_CREDENTIALS)
 
         LOG.info(
             "User logged in successfully. User ID: %s",
@@ -137,7 +134,7 @@ class AuthService:
                 claims.jti,
             )
             raise AppException(
-                ErrorCodes.UNAUTHORIZED, "Refresh token expired or revoked"
+                ResponseCode.TOKEN_EXPIRED, "Refresh token expired or revoked"
             )
 
         # 3. Single-Use Rotation: Invalidate previous refresh token
@@ -149,13 +146,15 @@ class AuthService:
         )
 
         # 4. Fetch user
+        if claims.email is None:
+            raise AppException(ResponseCode.INVALID_TOKEN)
         user = self.user_repo.get_user_by_email(claims.email)
         if not user:
             LOG.error(
                 "User associated with valid token no longer exists in DB: user_id=%s",
                 claims.user_id,
             )
-            raise AppException(ErrorCodes.NOT_FOUND, "User not found")
+            raise AppException(ResponseCode.NOT_FOUND)
 
         LOG.info("New token pair successfully minted for user_id: %s", user.id)
         return self._generate_token_dict(user)

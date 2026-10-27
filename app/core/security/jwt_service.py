@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
+from typing import Any
 import jwt
 
 from app.core.config import settings
 from app.core.security.token_data import TokenData
 from app.core.exception.app_exception import AppException
-from app.core.exception.error_codes import ErrorCodes
+from app.core.response.response_code import ResponseCode
 
 
 class JWTService:
@@ -52,15 +52,11 @@ class JWTService:
             )
             claims = TokenData(**payload)
             if claims.type != expected_type:
-                raise AppException(
-                    ErrorCodes.UNAUTHORIZED,
-                    f"Expected a {expected_type} token",
-                )
+                raise AppException(ResponseCode.INVALID_TOKEN)
             return claims
         except jwt.ExpiredSignatureError:
-            raise AppException(ErrorCodes.UNAUTHORIZED, "Token has expired")
+            raise AppException(ResponseCode.TOKEN_EXPIRED) from None
         except jwt.InvalidTokenError:
             raise AppException(
-                ErrorCodes.UNAUTHORIZED,
-                "Invalid token signature or format",
-            )
+                ResponseCode.INVALID_TOKEN
+            ) from None

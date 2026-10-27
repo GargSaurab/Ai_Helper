@@ -11,7 +11,7 @@ class AuthenticationService:
         request: Request,
         token: str,
     ) -> None:
-        claims = self.jwt_service.decode(token)
+        claims = self.jwt_service.decode(token, expected_type="access")
 
         request.state.user_id = claims.user_id
         request.state.user_email = claims.email

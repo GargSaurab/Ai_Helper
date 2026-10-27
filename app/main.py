@@ -8,7 +8,10 @@ from app.core.config import settings
 from app.core.exception.exception_handler import register_exception_handlers
 from app.core.logging.logger import get_logger
 from app.core.logging.logger_config import configure_logging
-from fastapi.security import OAuth2PasswordBearer
+from app.core.response.response_code import ResponseCode
+from app.core.response.response_documentation import error_responses
+from app.models.response.base_response import BaseResponse
+from app.models.response.health_response import HealthResponse
 
 # Configure logging before anything else
 configure_logging(settings.LOGGER_LEVEL)
@@ -46,14 +49,22 @@ app.include_router(
 register_exception_handlers(app)
 
 
-@app.get("/", tags=["Health"])
-async def health_check():
-    return {
-        "success": True,
-        "status": "healthy",
-        "application": settings.APP_NAME,
-        "version": settings.APP_VERSION,
-    }
+@app.get(
+    "/",
+    tags=["Health"],
+    response_model=BaseResponse[HealthResponse],
+    responses=error_responses(500),
+)
+async def health_check() -> BaseResponse[HealthResponse]:
+    return BaseResponse(
+        code=ResponseCode.SUCCESS.code,
+        message=ResponseCode.SUCCESS.message,
+        data=HealthResponse(
+            status="healthy",
+            application=settings.APP_NAME,
+            version=settings.APP_VERSION,
+        ),
+    )
 
 
 if __name__ == "__main__":
