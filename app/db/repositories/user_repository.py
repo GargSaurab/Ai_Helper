@@ -14,7 +14,10 @@ class UserRepository:
 
         return self.db.exec(statement).first()
 
-    def get_user_by_phone_number(self, phone_number: str) -> User | None:
+    def get_user_by_phone_number(self, phone_number: str | None) -> User | None:
+        if phone_number is None:
+            return None
+
         statement = select(User).where(User.phone_number == phone_number)
 
         return self.db.exec(statement).first()

@@ -42,7 +42,9 @@ class AuthService:
         if self.user_repo.get_user_by_email(request.email):
             raise AppException(ErrorCodes.ALREADY_EXISTS, "Email already Exists")
 
-        if self.user_repo.get_user_by_phone_number(request.phone_number):
+        if request.phone_number and self.user_repo.get_user_by_phone_number(
+            request.phone_number
+        ):
             raise AppException(ErrorCodes.ALREADY_EXISTS, "Phone Number already Exists")
 
         user = User(
@@ -56,7 +58,7 @@ class AuthService:
             saved_user = self.user_repo.save(user)
 
         except SQLAlchemyError as ex:
-            raise AppException(ErrorCodes.USER_REGISTRATION_FAILED) from ex
+            raise AppException(ErrorCodes.DATABASE_ERROR) from ex
 
         LOG.info(
             "User registered successfully. User ID: %s",
@@ -92,7 +94,7 @@ class AuthService:
         refresh_jti = str(uuid.uuid4())
 
         access_token = self.jwt_service.encode(
-            TokenData(user_id=str(user.id), email=user.email),
+            TokenData(user_id=str(user.id), email=user.email, type="access"),
             expiry_time=self.access_token_expire_minutes,
         )
 
@@ -100,6 +102,7 @@ class AuthService:
             TokenData(
                 user_id=str(user.id),
                 email=user.email,
+                type="refresh",
             ),
             expiry_time=self.refresh_token_expire_minutes,
             extra_claims={"jti": refresh_jti},
@@ -122,7 +125,7 @@ class AuthService:
         LOG.info("Refresh token rotation requested")
 
         # 1. Decode refresh token claims
-        claims = self.jwt_service.decode(refresh_token_str)
+        claims = self.jwt_service.decode(refresh_token_str, expected_type="refresh")
 
         redis_key = f"refresh_token:{claims.user_id}:{claims.jti}"
 
@@ -160,7 +163,7 @@ class AuthService:
     def logout_current_session(self, refresh_token_str: str) -> None:
         """Revokes the specific refresh token session presented by the client."""
         LOG.info("Single device logout requested")
-        claims = self.jwt_service.decode(refresh_token_str)
+        claims = self.jwt_service.decode(refresh_token_str, expected_type="refresh")
 
         redis_key = f"refresh_token:{claims.user_id}:{claims.jti}"
         deleted_count = self.redis_service.delete(redis_key)

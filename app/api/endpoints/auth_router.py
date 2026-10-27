@@ -36,6 +36,7 @@ def register_user(
         code=SUCCESS.code,
         message="User registered successfully",
         data=user,
+        success=True,
     )
 
 
@@ -61,6 +62,7 @@ def login(
         code=SUCCESS.code,
         message="Login successful",
         data=response,
+        success=True,
     )
 
 
@@ -75,6 +77,7 @@ def refresh_token(
         code=SUCCESS.code,
         message="Token refreshed successfully",
         data=new_tokens,
+        success=True,
     )
 
 
@@ -93,4 +96,5 @@ def logout(
         code=SUCCESS.code,
         message="Logged out successfully",
         data=None,
+        success=True,
     )

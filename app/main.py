@@ -49,6 +49,7 @@ register_exception_handlers(app)
 @app.get("/", tags=["Health"])
 async def health_check():
     return {
+        "success": True,
         "status": "healthy",
         "application": settings.APP_NAME,
         "version": settings.APP_VERSION,

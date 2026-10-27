@@ -9,3 +9,4 @@ class BaseResponse(BaseModel, Generic[T]):
     code: int
     message: str
     data: T | None = None
+    success: bool = True

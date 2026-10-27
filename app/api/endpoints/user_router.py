@@ -24,4 +24,5 @@ async def get_user(request: Request) -> BaseResponse:
         code=SUCCESS.code,
         message=SUCCESS.message,
         data=(request.state.user_id, request.state.user_email),
+        success=True,
     )

@@ -43,23 +43,24 @@ class JWTService:
             algorithm=self.algorithm,
         )
 
-    def decode(self, token: str) -> TokenData:
+    def decode(self, token: str, expected_type: str = "access") -> TokenData:
         try:
             payload = jwt.decode(
                 token,
                 self.secret_key,
                 algorithms=[self.algorithm],
             )
-            return TokenData(**payload)
+            claims = TokenData(**payload)
+            if claims.type != expected_type:
+                raise AppException(
+                    ErrorCodes.UNAUTHORIZED,
+                    f"Expected a {expected_type} token",
+                )
+            return claims
         except jwt.ExpiredSignatureError:
-            raise AppException(
-                error_code=ErrorCodes.TOKEN_EXPIRED,
-                status_code=401,
-                detail="Token has expired",
-            )
+            raise AppException(ErrorCodes.UNAUTHORIZED, "Token has expired")
         except jwt.InvalidTokenError:
             raise AppException(
-                error_code=ErrorCodes.INVALID_TOKEN,
-                status_code=401,
-                detail="Invalid token signature or format",
+                ErrorCodes.UNAUTHORIZED,
+                "Invalid token signature or format",
             )

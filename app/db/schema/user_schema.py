@@ -11,7 +11,7 @@ class User(SQLModel, table=True):
 
     email: str = Field(index=True, unique=True)
 
-    phone_number: str = Field(index=True, unique=True)
+    phone_number: str | None = Field(default=None, index=True, unique=True)
 
     password_hash: str
 
