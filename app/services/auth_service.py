@@ -13,10 +13,11 @@ from app.core.security.jwt_service import JWTService
 from app.core.redis.redis_service import RedisService
 from app.core.config import settings
 
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 LOG = get_logger(__name__)
 DUMMY_PASSWORD_HASH = hash_password("invalid-user-timing-check")
+UNIQUE_VIOLATION_SQLSTATE = "23505"
 
 
 class AuthService:
@@ -35,10 +36,7 @@ class AuthService:
 
     def register(self, request: UserRegistrationRequest) -> dict:
 
-        LOG.info(
-            "Registration requested for email: %s",
-            request.email,
-        )
+        LOG.info("Registration requested")
 
         if self.user_repo.get_user_by_email(request.email):
             raise AppException(ResponseCode.ALREADY_EXISTS, "Email already exists")
@@ -58,6 +56,13 @@ class AuthService:
         try:
             saved_user = self.user_repo.save(user)
 
+        except IntegrityError as ex:
+            sqlstate = getattr(ex.orig, "sqlstate", None) or getattr(
+                ex.orig, "pgcode", None
+            )
+            if sqlstate == UNIQUE_VIOLATION_SQLSTATE:
+                raise AppException(ResponseCode.ALREADY_EXISTS) from ex
+            raise AppException(ResponseCode.DATABASE_ERROR) from ex
         except SQLAlchemyError as ex:
             raise AppException(ResponseCode.DATABASE_ERROR) from ex
 
@@ -70,7 +75,7 @@ class AuthService:
 
     def login(self, request: UserLoginRequest) -> dict[str, str]:
 
-        LOG.info("Login requested for email: %s", request.email)
+        LOG.info("Login requested")
 
         user: User | None = self.user_repo.get_user_by_email(request.email)
 
@@ -91,7 +96,7 @@ class AuthService:
         refresh_jti = str(uuid.uuid4())
 
         access_token = self.jwt_service.encode(
-            TokenData(user_id=str(user.id), email=user.email, type="access"),
+            TokenData(user_id=str(user.id), type="access"),
             expiry_time=self.access_token_expire_minutes,
         )
 
@@ -126,8 +131,9 @@ class AuthService:
 
         redis_key = f"refresh_token:{claims.user_id}:{claims.jti}"
 
-        # 2. Check existence in Redis
-        if not self.redis_service.exists(redis_key):
+        # 2. Atomically consume the token. Only one concurrent request can succeed.
+        deleted_count = self.redis_service.delete(redis_key)
+        if deleted_count == 0:
             LOG.warning(
                 "Refresh token not found or already revoked for user_id: %s, jti: %s",
                 claims.user_id,
@@ -138,7 +144,6 @@ class AuthService:
             )
 
         # 3. Single-Use Rotation: Invalidate previous refresh token
-        self.redis_service.delete(redis_key)
         LOG.info(
             "Previous refresh token revoked for user_id: %s, jti: %s",
             claims.user_id,
