@@ -49,6 +49,7 @@ class JWTService:
                 token,
                 self.secret_key,
                 algorithms=[self.algorithm],
+                options={"require": ["exp"]},
             )
             claims = TokenData(**payload)
             if claims.type != expected_type:

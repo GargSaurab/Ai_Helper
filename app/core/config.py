@@ -1,6 +1,6 @@
 from urllib.parse import quote_plus
 
-from pydantic import computed_field
+from pydantic import computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     DB_PASSWORD: str
 
     LOGGER_LEVEL: str = "INFO"
+    SQL_ECHO: bool = False
 
     APP_NAME: str = "Coding Ai Helper"
     APP_VERSION: str = "0.0.1"
@@ -26,11 +27,24 @@ class Settings(BaseSettings):
 
     ## JWT Secret Key for signing and verifying JWT tokens
     SECRET_KEY: str
+
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def validate_secret_key(cls, value: str) -> str:
+        if len(value.encode("utf-8")) < 32:
+            raise ValueError("SECRET_KEY must be at least 32 bytes long")
+        return value
+
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = (
         15  # Default expiration time in minutes for access tokens
     )
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 10080
+
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+    ]
 
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379

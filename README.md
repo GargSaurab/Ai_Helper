@@ -39,6 +39,7 @@ Before you begin, ensure you have the following installed on your machine:
 
 4. **Environment Variables:**
    Create a `.env` file in the root directory and add any required environment variables (e.g., `OPENAI_API_KEY`, `GOOGLE_API_KEY`, Database URIs). The application uses `pydantic-settings` to manage environment configurations.
+   SQL statement logging is disabled by default. Set `SQL_ECHO=true` only when you need to inspect database queries; SQLAlchemy echo logging can include bound parameter values.
 
 ## 🚦 Running the Application
 
