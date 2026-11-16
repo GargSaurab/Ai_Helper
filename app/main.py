@@ -9,6 +9,9 @@ from app.core.config import settings
 from app.core.exception.exception_handler import register_exception_handlers
 from app.core.logging.logger import get_logger
 from app.core.logging.logger_config import configure_logging
+from app.core.middleware.auth_rate_limit import AuthRateLimitMiddleware
+from app.core.redis.redis_client import get_redis_client
+from app.core.redis.redis_service import RedisService
 from app.core.response.response_code import ResponseCode
 from app.core.response.response_documentation import error_responses
 from app.models.response.base_response import BaseResponse
@@ -40,6 +43,11 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
     lifespan=lifespan,
+)
+
+app.add_middleware(
+    AuthRateLimitMiddleware,
+    redis_service=RedisService(get_redis_client()),
 )
 
 app.add_middleware(

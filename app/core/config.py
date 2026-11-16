@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     REDIS_DB: int = 0
     REDIS_PASSWORD: str | None = None
 
+    AUTH_RATE_LIMIT_WINDOW_SECONDS: int = 60
+    LOGIN_RATE_LIMIT: int = 10
+    REGISTER_RATE_LIMIT: int = 5
+    REFRESH_RATE_LIMIT: int = 30
+
     @property
     def access_token_expire_seconds(self) -> int:
         return self.ACCESS_TOKEN_EXPIRE_MINUTES * 60

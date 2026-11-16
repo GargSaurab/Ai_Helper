@@ -1,15 +1,17 @@
 from datetime import datetime, timezone
 
+from sqlalchemy import Index, text
 from sqlmodel import SQLModel, Field
 
 
 class User(SQLModel, table=True):
     __tablename__ = "users"
+    __table_args__ = (Index("uq_users_email_lower", text("lower(email)"), unique=True),)
     id: int | None = Field(default=None, primary_key=True)
 
     name: str
 
-    email: str = Field(index=True, unique=True)
+    email: str
 
     phone_number: str | None = Field(default=None, index=True, unique=True)
 
