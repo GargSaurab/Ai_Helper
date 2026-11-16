@@ -26,24 +26,19 @@ Before you begin, ensure you have the following installed on your machine:
    cd codingHelperAi
    ```
 
-2. **Start the database services:**
-   Start the PostgreSQL and Redis containers using Docker Compose.
-   ```bash
-   docker-compose up -d
-   ```
-
-3. **Install dependencies using `uv`:**
-   ```bash
-   uv sync
-   ```
-
-4. **Environment Variables:**
-   Create a `.env` file in the root directory and add any required environment variables (e.g., `OPENAI_API_KEY`, `GOOGLE_API_KEY`, Database URIs). The application uses `pydantic-settings` to manage environment configurations.
+2. **Environment Variables:**
+   Create a `.env` file in the root directory with the application’s required values, including `OPENAI_API_KEY`, `DB_PASSWORD`, `REDIS_PASSWORD`, and `SECRET_KEY`. Compose requires both passwords to be non-empty. The app container connects to Postgres and Redis using the hostnames `postgres` and `redis`.
    SQL statement logging is disabled by default. Set `SQL_ECHO=true` only when you need to inspect database queries; SQLAlchemy echo logging can include bound parameter values.
+
+3. **Start the application and its database services:**
+   Docker Compose builds and starts FastAPI, PostgreSQL, and Redis. The app is published on localhost port 8000; Postgres and Redis stay on the internal Compose network. Database migrations run when the app starts.
+   ```bash
+   docker compose up -d --build
+   ```
 
 ## 🚦 Running the Application
 
-You can start the FastAPI application using the integrated `uvicorn` server.
+The application is available at `http://localhost:8000` when started with Docker Compose. For local development outside Docker, install dependencies with `uv sync` and run the FastAPI application directly:
 
 **Using `uv`:**
 ```bash
@@ -70,7 +65,8 @@ codingHelperAi/
 │   ├── utils/          # Helper utilities
 │   ├── dependencies.py # FastAPI dependencies
 │   └── main.py         # Application entry point
-├── docker-compose.yml  # Local infrastructure (Postgres, Redis)
+├── docker-compose.yml  # App, Postgres, and Redis services
+├── Dockerfile          # FastAPI application image
 ├── pyproject.toml      # Project metadata and dependencies
 └── uv.lock             # Exact dependency lockfile
 ```
