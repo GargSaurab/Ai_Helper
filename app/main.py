@@ -10,6 +10,7 @@ from app.core.exception.exception_handler import register_exception_handlers
 from app.core.logging.logger import get_logger
 from app.core.logging.logger_config import configure_logging
 from app.core.middleware.auth_rate_limit import AuthRateLimitMiddleware
+from app.core.middleware.authentication import AuthenticationMiddleware
 from app.core.redis.redis_client import get_redis_client
 from app.core.redis.redis_service import RedisService
 from app.core.response.response_code import ResponseCode
@@ -49,6 +50,8 @@ app.add_middleware(
     AuthRateLimitMiddleware,
     redis_service=RedisService(get_redis_client()),
 )
+
+app.add_middleware(AuthenticationMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
