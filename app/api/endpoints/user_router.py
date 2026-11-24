@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from app.core.logging.logger import get_logger
 from app.core.response.response_code import ResponseCode
 from app.core.response.response_documentation import error_responses
-from app.core.security.security_dependency import CurrentUserDep
+from app.core.security.auth_dependencies import CurrentUserDep
 from app.models.response.base_response import BaseResponse
 from app.models.response.user_response import UserResponse
 

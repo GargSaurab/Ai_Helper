@@ -5,7 +5,7 @@ from fastapi import Depends
 from app.db.repo_dependencies import UserRepositoryDep
 from app.services.user_service import UserService
 from app.services.auth_service import AuthService
-from app.core.security.security_dependency import JWTServiceDep
+from app.core.security.auth_dependencies import JWTServiceDep
 from app.core.redis.redis_dependency import RedisServiceDep
 
 

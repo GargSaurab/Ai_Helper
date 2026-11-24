@@ -33,7 +33,6 @@ def register_user(
         data=tokens,
     )
 
-
 @router.post(
     "/login",
     response_model=BaseResponse[dict[str, str]],

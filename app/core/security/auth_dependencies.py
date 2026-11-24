@@ -3,8 +3,16 @@ from fastapi import Depends, Request
 
 from app.core.exception.app_exception import AppException
 from app.core.response.response_code import ResponseCode
+from app.core.security.jwt_service import JWTService
 from app.db.repo_dependencies import UserRepositoryDep
 from app.db.schema.user_schema import User
+
+
+def get_jwt_service() -> JWTService:
+    return JWTService()
+
+
+JWTServiceDep = Annotated[JWTService, Depends(get_jwt_service)]
 
 
 def get_current_user(
