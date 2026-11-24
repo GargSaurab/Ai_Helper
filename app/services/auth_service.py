@@ -55,8 +55,10 @@ class AuthService:
 
         try:
             saved_user = self.user_repo.save(user)
+            self.user_repo.transactions.commit()
 
         except IntegrityError as ex:
+            self.user_repo.transactions.rollback()
             sqlstate = getattr(ex.orig, "sqlstate", None) or getattr(
                 ex.orig, "pgcode", None
             )
@@ -64,6 +66,7 @@ class AuthService:
                 raise AppException(ResponseCode.ALREADY_EXISTS) from ex
             raise AppException(ResponseCode.DATABASE_ERROR) from ex
         except SQLAlchemyError as ex:
+            self.user_repo.transactions.rollback()
             raise AppException(ResponseCode.DATABASE_ERROR) from ex
 
         LOG.info(

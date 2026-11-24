@@ -3,13 +3,13 @@ from sqlmodel import Session, select
 
 from app.core.utils import normalize_string
 from app.db.schema.user_schema import User
-
-from sqlalchemy.exc import SQLAlchemyError
+from app.db.transaction_manager import TransactionManager
 
 
 class UserRepository:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session, transactions: TransactionManager):
         self.db = db
+        self.transactions = transactions
 
     def get_user_by_email(self, email: str) -> User | None:
         statement = select(User).where(func.lower(User.email) == normalize_string(email))
@@ -29,14 +29,8 @@ class UserRepository:
         return self.db.exec(statement).first()
 
     def save(self, user: User) -> User:
-        try:
-            user.email = normalize_string(user.email)
-            self.db.add(user)
-            self.db.commit()
-            self.db.refresh(user)
-
-            return user
-
-        except SQLAlchemyError:
-            self.db.rollback()
-            raise
+        user.email = normalize_string(user.email)
+        self.db.add(user)
+        self.db.flush()
+        self.db.refresh(user)
+        return user
